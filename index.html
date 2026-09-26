@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,12 +17,14 @@
   --text:#f8fafc;
   --danger:#ef4444;
 }
+
 *{
   box-sizing:border-box;
   -webkit-touch-callout:none;
   -webkit-user-select:none;
   user-select:none;
 }
+
 html,body{
   width:100%;
   height:100%;
@@ -33,18 +34,23 @@ html,body{
   background:var(--bg);
   color:var(--text);
 }
+
 #game-root{
   position:relative;
   width:100%;
   height:100%;
 }
+
 canvas{
   display:block;
   width:100%;
   height:100%;
   touch-action:none;
 }
-.hidden{display:none!important}
+
+.hidden{
+  display:none!important;
+}
 
 .overlay{
   position:absolute;
@@ -71,6 +77,7 @@ h1{
   color:var(--accent);
   text-shadow:2px 2px 0 #000;
 }
+
 h1 small{
   display:block;
   font-size:.5em;
@@ -90,14 +97,17 @@ h1 small{
   box-shadow:0 4px 0 #14532d;
   touch-action:manipulation;
 }
+
 .btn:active{
   transform:translateY(3px);
   box-shadow:0 1px 0 #14532d;
 }
+
 .btn.secondary{
   background:#38bdf8;
   box-shadow:0 4px 0 #0369a1;
 }
+
 .btn.small{
   padding:8px 16px;
   font-size:14px;
@@ -119,11 +129,13 @@ h1 small{
   font-size:18px;
   text-shadow:1px 1px 3px #000;
 }
+
 #hud .box{
   background:rgba(15,23,42,.55);
   padding:6px 12px;
   border-radius:10px;
 }
+
 #pauseBtn{
   pointer-events:auto;
   cursor:pointer;
@@ -144,6 +156,7 @@ h1 small{
   display:flex;
   gap:6px;
 }
+
 #powerupBar div{
   background:rgba(15,23,42,.6);
   border-radius:8px;
@@ -162,10 +175,12 @@ h1 small{
   padding:0 18px;
   z-index:6;
 }
+
 .tgroup{
   display:flex;
   gap:14px;
 }
+
 .tbtn{
   width:64px;
   height:64px;
@@ -179,11 +194,13 @@ h1 small{
   justify-content:center;
   touch-action:none;
 }
+
 p.small{
   opacity:.85;
   font-size:14px;
   max-width:420px;
 }
+
 .statrow{
   display:flex;
   gap:22px;
@@ -191,10 +208,12 @@ p.small{
   margin:10px 0;
   font-size:16px;
 }
+
 .statrow div b{
   display:block;
   color:var(--accent);
 }
+
 select{
   padding:8px;
   border-radius:8px;
@@ -232,6 +251,7 @@ style="position:absolute;inset:0;background:#ff0000;opacity:0;pointer-events:non
     <div class="tbtn" id="btnLeft">◀</div>
     <div class="tbtn" id="btnSlide">▼</div>
   </div>
+
   <div class="tgroup">
     <div class="tbtn" id="btnJump">▲</div>
     <div class="tbtn" id="btnRight">▶</div>
@@ -240,10 +260,12 @@ style="position:absolute;inset:0;background:#ff0000;opacity:0;pointer-events:non
 
 <div id="menu" class="overlay">
   <h1>RAJU &amp; CHINTU<small>SCHOOL ESCAPE</small></h1>
+
   <p class="small">
     Run through the city streets! Dodge traffic, grab coins,
     and don't get caught.
   </p>
+
   <button class="btn" id="startBtn">▶ START</button>
   <button class="btn secondary small" id="howBtn">❓ How to Play</button>
   <button class="btn secondary small" id="settingsBtn">⚙ Settings</button>
@@ -251,12 +273,14 @@ style="position:absolute;inset:0;background:#ff0000;opacity:0;pointer-events:non
 
 <div id="howto" class="overlay hidden">
   <h1 style="font-size:28px">How To Play</h1>
+
   <p class="small">
     ← / → or A / D or Swipe — change lane<br>
     Space / ↑ / W or Swipe Up — jump<br>
     ↓ / S or Swipe Down — slide<br>
     Grab coins, avoid cars &amp; buses, and keep ahead!
   </p>
+
   <button class="btn secondary" id="backFromHow">Back</button>
 </div>
 
@@ -282,6 +306,7 @@ style="position:absolute;inset:0;background:#ff0000;opacity:0;pointer-events:non
 
 <div id="pauseMenu" class="overlay hidden">
   <h1 style="font-size:30px">Paused</h1>
+
   <button class="btn" id="resumeBtn">▶ Resume</button>
   <button class="btn secondary" id="restartFromPause">🔁 Restart</button>
   <button class="btn secondary" id="homeFromPause">🏠 Home</button>
@@ -308,30 +333,35 @@ style="position:absolute;inset:0;background:#ff0000;opacity:0;pointer-events:non
 <script>
 "use strict";
 
-/*
-  Raju & Chintu: School Escape
-  Safari-friendly version
-*/
+/* =========================================================
+   SAFARI-FRIENDLY GAME
+========================================================= */
+
+window.RCGame = {
+  THREE:null,
+  renderer:null,
+  scene:null,
+  camera:null,
+  gfx:"medium",
+  engineReady:false,
+  stripes:[],
+  dividers:[],
+  scenery:[]
+};
+
 
 /* =========================================================
    ERROR HANDLING
 ========================================================= */
 
-window.addEventListener("error", function(e){
-  try{
-    fatal(
-      "Game error: " +
-      (e && e.message ? e.message : "Unknown error")
-    );
-  }catch(_){}
-});
-
 function fatal(msg){
+
   console.error(msg);
 
-  let d=document.getElementById("fatalBanner");
+  var d=document.getElementById("fatalBanner");
 
   if(!d){
+
     d=document.createElement("div");
     d.id="fatalBanner";
 
@@ -347,48 +377,95 @@ function fatal(msg){
   d.textContent="⚠ "+msg;
 }
 
+window.addEventListener("error",function(e){
+
+  try{
+
+    fatal(
+      "Game error: "+
+      (
+        e && e.message
+        ?e.message
+        :"Unknown error"
+      )
+    );
+
+  }catch(_){}
+});
+
 
 /* =========================================================
-   GLOBAL GAME OBJECT
+   SAFE STORAGE
 ========================================================= */
 
-window.RCGame = {
-  THREE: null,
-  renderer: null,
-  scene: null,
-  camera: null,
-  gfx: "medium",
-  engineReady: false
-};
+function getStore(key, fallback){
+
+  try{
+
+    var v=localStorage.getItem(key);
+
+    return v===null
+      ?fallback
+      :v;
+
+  }catch(e){
+
+    return fallback;
+  }
+}
+
+function setStore(key,value){
+
+  try{
+
+    localStorage.setItem(
+      key,
+      String(value)
+    );
+
+  }catch(e){}
+}
 
 
 /* =========================================================
    AUDIO
 ========================================================= */
 
-let audioCtx=null;
+var audioCtx=null;
 
-let soundOn=true;
-
-try{
-  soundOn=localStorage.getItem("rc_sound")!=="off";
-}catch(e){}
+var soundOn=
+  getStore("rc_sound","on")!=="off";
 
 function actx(){
 
   if(!audioCtx){
 
-    const AudioContextClass =
+    var AudioContextClass=
       window.AudioContext ||
       window.webkitAudioContext;
 
-    if(!AudioContextClass) return null;
+    if(!AudioContextClass)
+      return null;
 
-    audioCtx=new AudioContextClass();
+    try{
+
+      audioCtx=
+        new AudioContextClass();
+
+    }catch(e){
+
+      return null;
+    }
   }
 
-  if(audioCtx.state==="suspended"){
-    try{ audioCtx.resume(); }catch(e){}
+  if(
+    audioCtx &&
+    audioCtx.state==="suspended"
+  ){
+
+    try{
+      audioCtx.resume();
+    }catch(e){}
   }
 
   return audioCtx;
@@ -397,33 +474,36 @@ function actx(){
 function beep(
   freq,
   dur,
-  type="sine",
-  gain=.2,
-  slideTo=null
+  type,
+  gain,
+  slideTo
 ){
 
-  if(!soundOn) return;
+  if(!soundOn)
+    return;
 
-  const ctx=actx();
+  var ctx=actx();
 
-  if(!ctx) return;
+  if(!ctx)
+    return;
 
   try{
 
-    const o=ctx.createOscillator();
-    const g=ctx.createGain();
+    var o=ctx.createOscillator();
+    var g=ctx.createGain();
 
-    o.type=type;
+    o.type=type||"sine";
     o.frequency.value=freq;
 
     if(slideTo){
+
       o.frequency.exponentialRampToValueAtTime(
         slideTo,
         ctx.currentTime+dur
       );
     }
 
-    g.gain.value=gain;
+    g.gain.value=gain||.2;
 
     g.gain.exponentialRampToValueAtTime(
       .001,
@@ -434,39 +514,70 @@ function beep(
     g.connect(ctx.destination);
 
     o.start();
-    o.stop(ctx.currentTime+dur);
+    o.stop(
+      ctx.currentTime+dur
+    );
 
   }catch(e){}
 }
 
-const sfx={
-  jump:()=>beep(420,.18,"square",.15,700),
-  land:()=>beep(180,.1,"sine",.12),
-  lane:()=>beep(500,.06,"square",.08),
-  slide:()=>beep(220,.15,"sawtooth",.1,120),
-  coin:()=>beep(880,.09,"sine",.15,1400),
-  horn:()=>beep(300,.25,"sawtooth",.15,260),
-  hit:()=>beep(120,.3,"square",.25,60),
-  power:()=>beep(600,.2,"triangle",.18,1200),
-  over:()=>beep(300,.4,"sawtooth",.2,80)
+var sfx={
+
+  jump:function(){
+    beep(420,.18,"square",.15,700);
+  },
+
+  land:function(){
+    beep(180,.1,"sine",.12);
+  },
+
+  lane:function(){
+    beep(500,.06,"square",.08);
+  },
+
+  slide:function(){
+    beep(220,.15,"sawtooth",.1,120);
+  },
+
+  coin:function(){
+    beep(880,.09,"sine",.15,1400);
+  },
+
+  horn:function(){
+    beep(300,.25,"sawtooth",.15,260);
+  },
+
+  hit:function(){
+    beep(120,.3,"square",.25,60);
+  },
+
+  power:function(){
+    beep(600,.2,"triangle",.18,1200);
+  },
+
+  over:function(){
+    beep(300,.4,"sawtooth",.2,80);
+  }
 };
 
-let musicTimer=null;
-let musicStep=0;
+var musicTimer=null;
+var musicStep=0;
 
-const musicScale=[
-  262,294,330,349,392,440,392,349
+var musicScale=[
+  262,294,330,349,
+  392,440,392,349
 ];
 
-const musicBass=[
+var musicBass=[
   131,147,165,147
 ];
 
 function scheduleMusic(){
 
-  if(!soundOn) return;
+  if(!soundOn)
+    return;
 
-  const step=musicStep%8;
+  var step=musicStep%8;
 
   beep(
     musicScale[step],
@@ -476,6 +587,7 @@ function scheduleMusic(){
   );
 
   if(step%2===0){
+
     beep(
       musicBass[(musicStep/2|0)%4],
       .35,
@@ -494,10 +606,12 @@ function startMusic(){
   musicStep=0;
 
   if(soundOn){
-    musicTimer=setInterval(
-      scheduleMusic,
-      240
-    );
+
+    musicTimer=
+      setInterval(
+        scheduleMusic,
+        240
+      );
   }
 }
 
@@ -513,13 +627,15 @@ function stopMusic(){
 
 function sayCaught(){
 
-  if(!soundOn) return;
+  if(!soundOn)
+    return;
 
   try{
 
-    if(!window.speechSynthesis) return;
+    if(!window.speechSynthesis)
+      return;
 
-    const u=
+    var u=
       new SpeechSynthesisUtterance(
         "Pakar liya!"
       );
@@ -529,6 +645,7 @@ function sayCaught(){
     u.volume=1;
 
     window.speechSynthesis.cancel();
+
     window.speechSynthesis.speak(u);
 
   }catch(e){}
@@ -543,7 +660,8 @@ function hasWebGL(){
 
   try{
 
-    const c=document.createElement("canvas");
+    var c=
+      document.createElement("canvas");
 
     return !!(
       window.WebGLRenderingContext &&
@@ -561,7 +679,7 @@ function hasWebGL(){
 
 
 /* =========================================================
-   THREE.JS INITIALIZATION
+   THREE ENGINE
 ========================================================= */
 
 function initEngine(){
@@ -569,8 +687,7 @@ function initEngine(){
   if(typeof window.THREE==="undefined"){
 
     fatal(
-      "3D library could not load. " +
-      "Please check your internet connection."
+      "3D library could not load. Please check your internet connection."
     );
 
     return false;
@@ -587,23 +704,32 @@ function initEngine(){
 
   try{
 
-    RCGame.THREE=window.THREE;
+    RCGame.THREE=
+      window.THREE;
 
-    const THREE=RCGame.THREE;
+    var THREE=
+      RCGame.THREE;
 
-    const canvas=
+    var canvas=
       document.getElementById("c");
 
     RCGame.renderer=
       new THREE.WebGLRenderer({
+
         canvas:canvas,
+
         antialias:true,
+
         alpha:false,
+
         powerPreference:"default"
       });
 
     RCGame.renderer.setPixelRatio(
-      Math.min(window.devicePixelRatio || 1,1.5)
+      Math.min(
+        window.devicePixelRatio||1,
+        1.5
+      )
     );
 
     RCGame.renderer.setSize(
@@ -616,7 +742,9 @@ function initEngine(){
       new THREE.Scene();
 
     RCGame.scene.background=
-      new THREE.Color(0x8ec9f0);
+      new THREE.Color(
+        0x8ec9f0
+      );
 
     RCGame.scene.fog=
       new THREE.Fog(
@@ -628,12 +756,13 @@ function initEngine(){
     RCGame.camera=
       new THREE.PerspectiveCamera(
         62,
-        window.innerWidth/window.innerHeight,
+        window.innerWidth/
+        window.innerHeight,
         .1,
         300
       );
 
-    const hemi=
+    var hemi=
       new THREE.HemisphereLight(
         0xffffff,
         0x445566,
@@ -642,22 +771,23 @@ function initEngine(){
 
     RCGame.scene.add(hemi);
 
-    const sun=
+    var sun=
       new THREE.DirectionalLight(
         0xffffff,
         .9
       );
 
-    sun.position.set(5,12,8);
+    sun.position.set(
+      5,
+      12,
+      8
+    );
 
     RCGame.scene.add(sun);
 
     setupWorld();
-
     setupCharacters();
-
     setupInput();
-
     setupUI();
 
     RCGame.engineReady=true;
@@ -668,9 +798,11 @@ function initEngine(){
 
     fatal(
       "Game engine failed: "+
-      (err && err.message
-        ? err.message
-        : "Unknown error")
+      (
+        err && err.message
+        ?err.message
+        :"Unknown error"
+      )
     );
 
     return false;
@@ -682,68 +814,97 @@ function initEngine(){
    WORLD
 ========================================================= */
 
-const LANES=[-2.4,0,2.4];
+var LANES=[
+  -2.4,
+  0,
+  2.4
+];
 
 function boxMesh(
   w,
   h,
   d,
   color,
-  cast=true
+  cast
 ){
 
-  const THREE=RCGame.THREE;
+  var THREE=
+    RCGame.THREE;
 
-  const mesh=
+  var mesh=
     new THREE.Mesh(
-      new THREE.BoxGeometry(w,h,d),
+
+      new THREE.BoxGeometry(
+        w,h,d
+      ),
+
       new THREE.MeshStandardMaterial({
         color:color
       })
     );
 
-  if(cast){
+  if(cast!==false)
     mesh.castShadow=true;
-  }
 
   return mesh;
 }
 
 function setupWorld(){
 
-  const THREE=RCGame.THREE;
-  const scene=RCGame.scene;
+  var THREE=
+    RCGame.THREE;
 
-  const groundMat=
+  var scene=
+    RCGame.scene;
+
+  var groundMat=
     new THREE.MeshStandardMaterial({
       color:0x3a3f4b
     });
 
-  const ground=
+  var ground=
     new THREE.Mesh(
-      new THREE.PlaneGeometry(14,220),
+
+      new THREE.PlaneGeometry(
+        14,
+        220
+      ),
+
       groundMat
     );
 
-  ground.rotation.x=-Math.PI/2;
-  ground.position.z=-80;
+  ground.rotation.x=
+    -Math.PI/2;
+
+  ground.position.z=
+    -80;
+
   ground.receiveShadow=true;
 
   scene.add(ground);
 
+
   function makeSidewalk(x){
 
-    const m=
+    var m=
       new THREE.Mesh(
+
         new THREE.BoxGeometry(
-          3,.2,220
+          3,
+          .2,
+          220
         ),
+
         new THREE.MeshStandardMaterial({
           color:0x9ca3af
         })
       );
 
-    m.position.set(x,.1,-80);
+    m.position.set(
+      x,
+      .1,
+      -80
+    );
 
     scene.add(m);
   }
@@ -754,11 +915,15 @@ function setupWorld(){
 
   /* lane markers */
 
-  window.RCGame.stripes=[];
+  RCGame.stripes=[];
 
-  for(let i=0;i<24;i++){
+  for(
+    var i=0;
+    i<24;
+    i++
+  ){
 
-    const s=
+    var s=
       boxMesh(
         .25,
         .02,
@@ -779,13 +944,23 @@ function setupWorld(){
   }
 
 
-  window.RCGame.dividers=[];
+  /* dividers */
 
-  for(let d=0;d<2;d++){
+  RCGame.dividers=[];
 
-    for(let i=0;i<20;i++){
+  for(
+    var d=0;
+    d<2;
+    d++
+  ){
 
-      const s=
+    for(
+      var j=0;
+      j<20;
+      j++
+    ){
+
+      var ds=
         boxMesh(
           .15,
           .02,
@@ -794,41 +969,51 @@ function setupWorld(){
           false
         );
 
-      s.position.set(
-        d===0 ? -1.2 : 1.2,
+      ds.position.set(
+        d===0
+        ?-1.2
+        :1.2,
         .01,
-        -i*10
+        -j*10
       );
 
-      scene.add(s);
+      scene.add(ds);
 
-      RCGame.dividers.push(s);
+      RCGame.dividers.push(ds);
     }
   }
 
 
   /* scenery */
 
-  window.RCGame.scenery=[];
+  RCGame.scenery=[];
 
   function spawnScenery(z){
 
-    const side=
-      Math.random()<.5 ? -1 : 1;
+    var side=
+      Math.random()<.5
+      ?-1
+      :1;
 
-    const x=
-      side*(9.5+Math.random()*2);
+    var x=
+      side*
+      (
+        9.5+
+        Math.random()*2
+      );
 
-    let obj;
+    var obj;
 
     if(Math.random()<.6){
 
-      const h=
-        4+Math.random()*6;
+      var h=
+        4+
+        Math.random()*6;
 
       obj=
         boxMesh(
-          4+Math.random()*2,
+          4+
+          Math.random()*2,
           h,
           4,
           [
@@ -837,7 +1022,9 @@ function setupWorld(){
             0xfca5a5,
             0xa7f3d0
           ][
-            Math.floor(Math.random()*4)
+            Math.floor(
+              Math.random()*4
+            )
           ]
         );
 
@@ -852,7 +1039,7 @@ function setupWorld(){
       obj=
         new THREE.Group();
 
-      const trunk=
+      var trunk=
         boxMesh(
           .4,
           1.6,
@@ -862,13 +1049,15 @@ function setupWorld(){
 
       trunk.position.y=.8;
 
-      const leaves=
+      var leaves=
         new THREE.Mesh(
+
           new THREE.SphereGeometry(
             1.1,
             8,
             8
           ),
+
           new THREE.MeshStandardMaterial({
             color:0x2e7d32
           })
@@ -893,8 +1082,15 @@ function setupWorld(){
     RCGame.scenery.push(obj);
   }
 
-  for(let i=0;i<18;i++){
-    spawnScenery(-i*10-5);
+  for(
+    var k=0;
+    k<18;
+    k++
+  ){
+
+    spawnScenery(
+      -k*10-5
+    );
   }
 }
 
@@ -905,24 +1101,40 @@ function setupWorld(){
 
 function makeRunner(options){
 
-  const THREE=RCGame.THREE;
+  var THREE=
+    RCGame.THREE;
 
-  const {
-    hood,
-    jacket,
-    skin,
-    shorts,
-    shoe,
-    scale=1,
-    pack=true
-  }=options;
+  var hood=
+    options.hood;
 
-  const g=
+  var jacket=
+    options.jacket;
+
+  var skin=
+    options.skin;
+
+  var shorts=
+    options.shorts;
+
+  var shoe=
+    options.shoe;
+
+  var scale=
+    options.scale||
+    1;
+
+  var pack=
+    options.pack!==false;
+
+  var g=
     new THREE.Group();
 
-  const torso=
+
+  var torso=
     boxMesh(
-      .55,.7,.35,
+      .55,
+      .7,
+      .35,
       hood
     );
 
@@ -931,9 +1143,11 @@ function makeRunner(options){
   g.add(torso);
 
 
-  const jacketM=
+  var jacketM=
     boxMesh(
-      .6,.42,.4,
+      .6,
+      .42,
+      .4,
       jacket
     );
 
@@ -942,11 +1156,15 @@ function makeRunner(options){
   g.add(jacketM);
 
 
-  const head=
+  var head=
     new THREE.Mesh(
+
       new THREE.SphereGeometry(
-        .32,10,10
+        .32,
+        10,
+        10
       ),
+
       new THREE.MeshStandardMaterial({
         color:skin
       })
@@ -957,11 +1175,15 @@ function makeRunner(options){
   g.add(head);
 
 
-  const hair=
+  var hair=
     new THREE.Mesh(
+
       new THREE.SphereGeometry(
-        .34,8,8
+        .34,
+        8,
+        8
       ),
+
       new THREE.MeshStandardMaterial({
         color:0x2b2118
       })
@@ -974,85 +1196,111 @@ function makeRunner(options){
   );
 
   hair.scale.set(
-    1,.7,1
+    1,
+    .7,
+    1
   );
 
   g.add(hair);
 
 
-  const legL=
+  var legL=
     boxMesh(
-      .2,.6,.22,
+      .2,
+      .6,
+      .22,
       shorts
     );
 
   legL.position.set(
-    -.16,.6,0
+    -.16,
+    .6,
+    0
   );
 
   g.add(legL);
 
 
-  const legR=
+  var legR=
     boxMesh(
-      .2,.6,.22,
+      .2,
+      .6,
+      .22,
       shorts
     );
 
   legR.position.set(
-    .16,.6,0
+    .16,
+    .6,
+    0
   );
 
   g.add(legR);
 
 
-  const shoeL=
+  var shoeL=
     boxMesh(
-      .22,.14,.3,
+      .22,
+      .14,
+      .3,
       shoe
     );
 
   shoeL.position.set(
-    -.16,.3,.05
+    -.16,
+    .3,
+    .05
   );
 
   g.add(shoeL);
 
 
-  const shoeR=
+  var shoeR=
     boxMesh(
-      .22,.14,.3,
+      .22,
+      .14,
+      .3,
       shoe
     );
 
   shoeR.position.set(
-    .16,.3,.05
+    .16,
+    .3,
+    .05
   );
 
   g.add(shoeR);
 
 
-  const armL=
+  var armL=
     boxMesh(
-      .15,.55,.18,
+      .15,
+      .55,
+      .18,
       hood
     );
 
   armL.position.set(
-    -.4,1.25,0
+    -.4,
+    1.25,
+    0
   );
 
   g.add(armL);
 
 
-  const armR=
+  var armR=
     boxMesh(
-      .15,.55,.18,
+      .15,
+      .55,
+      .18,
       hood
     );
 
   armR.position.set(
-    .4,1.25,0
+    .4,
+    1.25,
+    0
   );
 
   g.add(armR);
@@ -1060,9 +1308,11 @@ function makeRunner(options){
 
   if(pack){
 
-    const bp=
+    var bp=
       boxMesh(
-        .45,.5,.2,
+        .45,
+        .5,
+        .2,
         0x1d4ed8
       );
 
@@ -1079,24 +1329,25 @@ function makeRunner(options){
   g.scale.setScalar(scale);
 
   g.userData={
-    legL,
-    legR,
-    armL,
-    armR,
-    head,
+    legL:legL,
+    legR:legR,
+    armL:armL,
+    armR:armR,
+    head:head,
     torso:jacketM
   };
 
   return g;
 }
 
-
 function setupCharacters(){
 
-  const scene=RCGame.scene;
+  var scene=
+    RCGame.scene;
 
   window.player=
     makeRunner({
+
       hood:0xfacc15,
       jacket:0x2563eb,
       skin:0xf2c29a,
@@ -1104,13 +1355,15 @@ function setupCharacters(){
       shoe:0x1d4ed8
     });
 
-  player.rotation.y=Math.PI;
+  player.rotation.y=
+    Math.PI;
 
   scene.add(player);
 
 
   window.teacher=
     makeRunner({
+
       hood:0x92400e,
       jacket:0x78350f,
       skin:0xd9a066,
@@ -1120,11 +1373,15 @@ function setupCharacters(){
       pack:false
     });
 
-  teacher.rotation.y=Math.PI;
+  teacher.rotation.y=
+    Math.PI;
 
-  const glasses=
+
+  var glasses=
     boxMesh(
-      .36,.08,.06,
+      .36,
+      .08,
+      .06,
       0x111827,
       false
     );
@@ -1145,38 +1402,65 @@ function setupCharacters(){
    GAME STATE
 ========================================================= */
 
-let state="menu";
+var state="menu";
 
-let laneIdx=1;
-let targetX=LANES[1];
-let curX=LANES[1];
+var laneIdx=1;
 
-let velY=0;
-let isJumping=false;
-let isSliding=false;
-let slideTimer=0;
+var targetX=
+  LANES[1];
 
-let baseSpeed=9;
-let speed=baseSpeed;
+var curX=
+  LANES[1];
 
-let elapsed=0;
-let distance=0;
-let score=0;
-let coins=0;
+var velY=0;
 
-let gap=5.5;
-let maxGap=6.5;
+var isJumping=false;
 
-let stumbleTimer=0;
-let shakeTimer=0;
+var isSliding=false;
 
-let obstacles=[];
-let coinObjs=[];
-let powerObjs=[];
+var slideTimer=0;
 
-let spawnTimer=0;
+var baseSpeed=9;
 
-let powerups={
+var speed=
+  baseSpeed;
+
+var elapsed=0;
+
+var distance=0;
+
+var score=0;
+
+var coins=0;
+
+var gap=5.5;
+
+var maxGap=6.5;
+
+var stumbleTimer=0;
+
+var shakeTimer=0;
+
+
+/*
+  NEW COLLISION SYSTEM
+
+  0 = no collision
+  1 = first collision happened
+  2 = second collision happened -> GAME OVER
+*/
+var collisionCount=0;
+
+
+var obstacles=[];
+
+var coinObjs=[];
+
+var powerObjs=[];
+
+var spawnTimer=0;
+
+var powerups={
   magnet:0,
   shield:0,
   jump:0,
@@ -1184,34 +1468,37 @@ let powerups={
   mult:0
 };
 
-let best={
+var best={
   score:0,
   dist:0,
   coins:0
 };
 
-try{
 
-  best={
-    score:+localStorage.getItem(
-      "rc_best_score"
-    )||0,
+best.score=
+  +getStore(
+    "rc_best_score",
+    0
+  )||0;
 
-    dist:+localStorage.getItem(
-      "rc_best_dist"
-    )||0,
+best.dist=
+  +getStore(
+    "rc_best_dist",
+    0
+  )||0;
 
-    coins:+localStorage.getItem(
-      "rc_total_coins"
-    )||0
-  };
+best.coins=
+  +getStore(
+    "rc_total_coins",
+    0
+  )||0;
 
-}catch(e){}
 
+var GROUND_Y=0;
 
-const GROUND_Y=0;
-const GRAVITY=-22;
-const JUMP_V=8.4;
+var GRAVITY=-22;
+
+var JUMP_V=8.4;
 
 
 /* =========================================================
@@ -1221,22 +1508,45 @@ const JUMP_V=8.4;
 function resetGame(){
 
   laneIdx=1;
-  targetX=curX=LANES[1];
+
+  targetX=
+    LANES[1];
+
+  curX=
+    LANES[1];
 
   velY=0;
+
   isJumping=false;
+
   isSliding=false;
+
   slideTimer=0;
 
   baseSpeed=9;
+
   speed=baseSpeed;
 
   elapsed=0;
+
   distance=0;
+
   score=0;
+
   coins=0;
 
   gap=5.5;
+
+  stumbleTimer=0;
+
+  shakeTimer=0;
+
+  /*
+    IMPORTANT:
+    Every new game starts with zero collisions.
+  */
+  collisionCount=0;
+
 
   powerups={
     magnet:0,
@@ -1246,28 +1556,38 @@ function resetGame(){
     mult:0
   };
 
-  stumbleTimer=0;
-  shakeTimer=0;
 
-  const scene=RCGame.scene;
+  var scene=
+    RCGame.scene;
+
 
   obstacles.forEach(
-    o=>scene.remove(o.mesh)
+    function(o){
+      scene.remove(o.mesh);
+    }
   );
 
   coinObjs.forEach(
-    o=>scene.remove(o.mesh)
+    function(o){
+      scene.remove(o.mesh);
+    }
   );
 
   powerObjs.forEach(
-    o=>scene.remove(o.mesh)
+    function(o){
+      scene.remove(o.mesh);
+    }
   );
 
+
   obstacles=[];
+
   coinObjs=[];
+
   powerObjs=[];
 
   spawnTimer=0;
+
 
   player.position.set(
     LANES[1],
@@ -1276,6 +1596,7 @@ function resetGame(){
   );
 
   player.scale.y=1;
+
 
   teacher.position.set(
     LANES[1],
@@ -1289,7 +1610,7 @@ function resetGame(){
    VEHICLES
 ========================================================= */
 
-const carColors=[
+var carColors=[
   0xef4444,
   0x3b82f6,
   0x22c55e,
@@ -1300,24 +1621,40 @@ const carColors=[
 
 function makeVehicle(){
 
-  const THREE=RCGame.THREE;
+  var THREE=
+    RCGame.THREE;
 
-  const bus=
+  var bus=
     Math.random()<.3;
 
-  const g=
+  var g=
     new THREE.Group();
 
-  const w=bus?1.9:1.6;
-  const h=bus?1.7:1.1;
-  const d=bus?4.2:2.4;
+  var w=
+    bus
+    ?1.9
+    :1.6;
 
-  const body=
+  var h=
+    bus
+    ?1.7
+    :1.1;
+
+  var d=
+    bus
+    ?4.2
+    :2.4;
+
+
+  var body=
     boxMesh(
-      w,h,d,
+      w,
+      h,
+      d,
       carColors[
         Math.floor(
-          Math.random()*carColors.length
+          Math.random()*
+          carColors.length
         )
       ]
     );
@@ -1328,7 +1665,7 @@ function makeVehicle(){
   g.add(body);
 
 
-  const win=
+  var win=
     boxMesh(
       w*.85,
       h*.4,
@@ -1344,18 +1681,23 @@ function makeVehicle(){
 
 
   for(
-    const sx of [-1,1]
+    var a of [-1,1]
   ){
 
     for(
-      const sz of [-1,1]
+      var b of [-1,1]
     ){
 
-      const wheel=
+      var wheel=
         new THREE.Mesh(
+
           new THREE.CylinderGeometry(
-            .32,.32,.25,10
+            .32,
+            .32,
+            .25,
+            10
           ),
+
           new THREE.MeshStandardMaterial({
             color:0x111827
           })
@@ -1365,27 +1707,32 @@ function makeVehicle(){
         Math.PI/2;
 
       wheel.position.set(
-        sx*w*.48,
+        a*w*.48,
         .32,
-        sz*d*.32
+        b*d*.32
       );
 
       g.add(wheel);
     }
   }
 
+
   g.userData.h=h;
-  g.userData.isBus=bus;
+
+  g.userData.isBus=
+    bus;
 
   return g;
 }
 
 function spawnObstacle(){
 
-  const lane=
-    Math.floor(Math.random()*3);
+  var lane=
+    Math.floor(
+      Math.random()*3
+    );
 
-  const mesh=
+  var mesh=
     makeVehicle();
 
   mesh.position.set(
@@ -1397,8 +1744,11 @@ function spawnObstacle(){
   RCGame.scene.add(mesh);
 
   obstacles.push({
-    mesh,
-    lane,
+
+    mesh:mesh,
+
+    lane:lane,
+
     hit:false
   });
 }
@@ -1410,46 +1760,71 @@ function spawnObstacle(){
 
 function spawnCoinsRow(){
 
-  const THREE=RCGame.THREE;
+  var THREE=
+    RCGame.THREE;
 
-  const lane=
-    Math.floor(Math.random()*3);
+  var lane=
+    Math.floor(
+      Math.random()*3
+    );
 
-  const count=
-    3+Math.floor(Math.random()*4);
+  var count=
+    3+
+    Math.floor(
+      Math.random()*4
+    );
 
-  const arc=
+  var arc=
     Math.random()<.4;
 
-  for(let i=0;i<count;i++){
 
-    const geo=
+  for(
+    var i=0;
+    i<count;
+    i++
+  ){
+
+    var geo=
       new THREE.TorusGeometry(
-        .28,.09,8,16
+        .28,
+        .09,
+        8,
+        16
       );
 
-    const mesh=
+    var mesh=
       new THREE.Mesh(
+
         geo,
+
         new THREE.MeshStandardMaterial({
+
           color:0xfbbf24,
+
           metalness:.6,
+
           roughness:.3,
+
           emissive:0x8a5a00,
+
           emissiveIntensity:.3
         })
       );
 
-    const z=
+
+    var z=
       -70-i*1.6;
 
-    const y=
+    var y=
       arc
+
       ? .9+
         Math.sin(
           i/(count-1)*Math.PI
         )*1.2
-      : 1;
+
+      :1;
+
 
     mesh.position.set(
       LANES[lane],
@@ -1459,9 +1834,13 @@ function spawnCoinsRow(){
 
     RCGame.scene.add(mesh);
 
+
     coinObjs.push({
-      mesh,
-      lane,
+
+      mesh:mesh,
+
+      lane:lane,
+
       taken:false
     });
   }
@@ -1472,7 +1851,7 @@ function spawnCoinsRow(){
    POWERUPS
 ========================================================= */
 
-const puTypes=[
+var puTypes=[
   "magnet",
   "shield",
   "jump",
@@ -1480,39 +1859,58 @@ const puTypes=[
   "mult"
 ];
 
-const puColors={
+var puColors={
+
   magnet:0xa855f7,
+
   shield:0x38bdf8,
+
   jump:0x22c55e,
+
   speed:0xf97316,
+
   mult:0xfacc15
 };
 
 function spawnPowerup(){
 
-  const THREE=RCGame.THREE;
+  var THREE=
+    RCGame.THREE;
 
-  const type=
+  var type=
     puTypes[
       Math.floor(
-        Math.random()*puTypes.length
+        Math.random()*
+        puTypes.length
       )
     ];
 
-  const lane=
-    Math.floor(Math.random()*3);
+  var lane=
+    Math.floor(
+      Math.random()*3
+    );
 
-  const mesh=
+
+  var mesh=
     new THREE.Mesh(
+
       new THREE.IcosahedronGeometry(
-        .4,0
+        .4,
+        0
       ),
+
       new THREE.MeshStandardMaterial({
-        color:puColors[type],
-        emissive:puColors[type],
+
+        color:
+          puColors[type],
+
+        emissive:
+          puColors[type],
+
         emissiveIntensity:.4
       })
     );
+
 
   mesh.position.set(
     LANES[lane],
@@ -1522,10 +1920,15 @@ function spawnPowerup(){
 
   RCGame.scene.add(mesh);
 
+
   powerObjs.push({
-    mesh,
-    lane,
-    type,
+
+    mesh:mesh,
+
+    lane:lane,
+
+    type:type,
+
     taken:false
   });
 }
@@ -1537,10 +1940,14 @@ function spawnPowerup(){
 
 function moveLane(dir){
 
-  const n=
+  var n=
     laneIdx+dir;
 
-  if(n<0 || n>2) return;
+  if(
+    n<0 ||
+    n>2
+  )
+    return;
 
   laneIdx=n;
 
@@ -1555,14 +1962,15 @@ function doJump(){
   if(
     isJumping ||
     isSliding
-  ) return;
+  )
+    return;
 
   isJumping=true;
 
   velY=
     powerups.jump>0
-    ? JUMP_V*1.35
-    : JUMP_V;
+    ?JUMP_V*1.35
+    :JUMP_V;
 
   sfx.jump();
 }
@@ -1572,9 +1980,11 @@ function doSlide(){
   if(
     isSliding ||
     isJumping
-  ) return;
+  )
+    return;
 
   isSliding=true;
+
   slideTimer=.65;
 
   sfx.slide();
@@ -1586,47 +1996,57 @@ function setupInput(){
     "keydown",
     function(e){
 
-      if(state!=="playing")
+      if(
+        state!=="playing"
+      )
         return;
+
 
       if(
         ["ArrowLeft","a","A"]
         .includes(e.key)
       ){
+
         moveLane(-1);
 
       }else if(
         ["ArrowRight","d","D"]
         .includes(e.key)
       ){
+
         moveLane(1);
 
       }else if(
         ["ArrowUp","w","W"," "]
         .includes(e.key)
       ){
+
         e.preventDefault();
+
         doJump();
 
       }else if(
         ["ArrowDown","s","S"]
         .includes(e.key)
       ){
+
         doSlide();
 
       }else if(
         e.key==="Escape"
       ){
+
         togglePause(true);
       }
     }
   );
 
 
-  let touchX=0;
-  let touchY=0;
+  var touchX=0;
 
-  const canvas=
+  var touchY=0;
+
+  var canvas=
     document.getElementById("c");
 
 
@@ -1634,7 +2054,9 @@ function setupInput(){
     "touchstart",
     function(e){
 
-      if(!e.touches.length)
+      if(
+        !e.touches.length
+      )
         return;
 
       touchX=
@@ -1652,33 +2074,50 @@ function setupInput(){
     "touchend",
     function(e){
 
-      if(state!=="playing")
+      if(
+        state!=="playing"
+      )
         return;
 
-      if(!e.changedTouches.length)
+      if(
+        !e.changedTouches.length
+      )
         return;
 
-      const dx=
+
+      var dx=
         e.changedTouches[0].clientX-
         touchX;
 
-      const dy=
+      var dy=
         e.changedTouches[0].clientY-
         touchY;
 
+
       if(
-        Math.abs(dx)>Math.abs(dy)
+        Math.abs(dx)>
+        Math.abs(dy)
       ){
 
-        if(Math.abs(dx)>30)
-          moveLane(dx>0?1:-1);
+        if(
+          Math.abs(dx)>30
+        )
+          moveLane(
+            dx>0
+            ?1
+            :-1
+          );
 
       }else{
 
-        if(dy<-30)
+        if(
+          dy<-30
+        )
           doJump();
 
-        else if(dy>30)
+        else if(
+          dy>30
+        )
           doSlide();
       }
 
@@ -1689,10 +2128,11 @@ function setupInput(){
 
   function btn(id,fn){
 
-    const el=
+    var el=
       document.getElementById(id);
 
-    if(!el) return;
+    if(!el)
+      return;
 
     el.addEventListener(
       "pointerdown",
@@ -1700,21 +2140,27 @@ function setupInput(){
 
         e.preventDefault();
 
-        if(state==="playing")
+        if(
+          state==="playing"
+        )
           fn();
-
       }
     );
   }
 
+
   btn(
     "btnLeft",
-    ()=>moveLane(-1)
+    function(){
+      moveLane(-1);
+    }
   );
 
   btn(
     "btnRight",
-    ()=>moveLane(1)
+    function(){
+      moveLane(1);
+    }
   );
 
   btn(
@@ -1735,8 +2181,11 @@ function setupInput(){
 
 function overlapZ(
   z,
-  halfSpan=.55
+  halfSpan
 ){
+
+  halfSpan=
+    halfSpan||.55;
 
   return Math.abs(
     z-player.position.z
@@ -1750,6 +2199,11 @@ function overlapZ(
 
 function triggerGameOver(){
 
+  if(
+    state==="over"
+  )
+    return;
+
   state="over";
 
   stopMusic();
@@ -1758,20 +2212,26 @@ function triggerGameOver(){
 
   sayCaught();
 
+
   document
     .getElementById("hud")
-    .classList.add("hidden");
+    .classList
+    .add("hidden");
 
   document
     .getElementById("powerupBar")
-    .classList.add("hidden");
+    .classList
+    .add("hidden");
 
   document
     .getElementById("touchControls")
-    .classList.add("hidden");
+    .classList
+    .add("hidden");
 
-  const distM=
+
+  var distM=
     Math.floor(distance);
+
 
   best.score=
     Math.max(
@@ -1779,32 +2239,32 @@ function triggerGameOver(){
       Math.floor(score)
     );
 
+
   best.dist=
     Math.max(
       best.dist,
       distM
     );
 
-  best.coins+=coins;
 
-  try{
+  best.coins+=
+    coins;
 
-    localStorage.setItem(
-      "rc_best_score",
-      best.score
-    );
 
-    localStorage.setItem(
-      "rc_best_dist",
-      best.dist
-    );
+  setStore(
+    "rc_best_score",
+    best.score
+  );
 
-    localStorage.setItem(
-      "rc_total_coins",
-      best.coins
-    );
+  setStore(
+    "rc_best_dist",
+    best.dist
+  );
 
-  }catch(e){}
+  setStore(
+    "rc_total_coins",
+    best.coins
+  );
 
 
   document.getElementById(
@@ -1812,24 +2272,29 @@ function triggerGameOver(){
   ).textContent=
     Math.floor(score);
 
+
   document.getElementById(
     "goCoins"
   ).textContent=
     coins;
+
 
   document.getElementById(
     "goDist"
   ).textContent=
     distM+"m";
 
+
   document.getElementById(
     "goBest"
   ).textContent=
     best.score;
 
+
   document
     .getElementById("gameOver")
-    .classList.remove("hidden");
+    .classList
+    .remove("hidden");
 }
 
 
@@ -1841,9 +2306,11 @@ function update(dt){
 
   elapsed+=dt;
 
+
   speed=
     Math.min(
-      baseSpeed+elapsed*.14,
+      baseSpeed+
+      elapsed*.14,
       baseSpeed*2.4
     )*
     (
@@ -1852,8 +2319,10 @@ function update(dt){
       :1
     );
 
+
   distance+=
     speed*dt*.5;
+
 
   score+=
     speed*dt*1.2;
@@ -1862,8 +2331,15 @@ function update(dt){
   /* lane movement */
 
   curX+=
-    (targetX-curX)*
-    Math.min(1,dt*10);
+    (
+      targetX-
+      curX
+    )*
+    Math.min(
+      1,
+      dt*10
+    );
+
 
   player.position.x=
     curX;
@@ -1879,14 +2355,17 @@ function update(dt){
     player.position.y+=
       velY*dt;
 
+
     if(
-      player.position.y<=GROUND_Y
+      player.position.y<=
+      GROUND_Y
     ){
 
       player.position.y=
         GROUND_Y;
 
       isJumping=false;
+
       velY=0;
 
       sfx.land();
@@ -1904,7 +2383,10 @@ function update(dt){
 
     player.position.y=0;
 
-    if(slideTimer<=0){
+
+    if(
+      slideTimer<=0
+    ){
 
       isSliding=false;
 
@@ -1915,13 +2397,16 @@ function update(dt){
 
   /* animation */
 
-  const runT=
-    performance.now()/1000*10;
+  var runT=
+    performance.now()/
+    1000*
+    10;
 
-  const amp=
+  var amp=
     isSliding
     ?0
     :.9;
+
 
   player.userData.legL.rotation.x=
     Math.sin(runT)*amp;
@@ -1937,25 +2422,44 @@ function update(dt){
 
 
   teacher.userData.legL.rotation.x=
-    Math.sin(runT*1.05)*.9;
+    Math.sin(
+      runT*1.05
+    )*.9;
 
   teacher.userData.legR.rotation.x=
-    -Math.sin(runT*1.05)*.9;
+    -Math.sin(
+      runT*1.05
+    )*.9;
 
   teacher.userData.armL.rotation.x=
-    -Math.sin(runT*1.05)*.9;
+    -Math.sin(
+      runT*1.05
+    )*.9;
 
   teacher.userData.armR.rotation.x=
-    Math.sin(runT*1.05)*.9;
+    Math.sin(
+      runT*1.05
+    )*.9;
 
 
-  /* teacher gap */
+  /* =======================================================
+     TEACHER GAP
+
+     Teacher slowly catches up.
+
+     After first collision the gap is reduced heavily,
+     so teacher becomes visibly closer.
+
+     Teacher itself does NOT cause Game Over anymore.
+     Only the SECOND vehicle collision does that.
+  ======================================================= */
 
   gap=
     Math.min(
       maxGap,
       gap+dt*.25
     );
+
 
   teacher.position.z+=
     (
@@ -1965,39 +2469,58 @@ function update(dt){
         player.position.z
       )
     )*
-    Math.min(1,dt*3);
+    Math.min(
+      1,
+      dt*3
+    );
+
 
   teacher.position.x+=
     (
       curX-
       teacher.position.x
     )*
-    Math.min(1,dt*6);
+    Math.min(
+      1,
+      dt*6
+    );
 
+
+  /*
+    Prevent teacher from physically passing
+    through Raju before the second collision.
+  */
 
   if(
-    teacher.position.z<.9
+    teacher.position.z<1.2
   ){
 
-    triggerGameOver();
-
-    return;
+    teacher.position.z=1.2;
   }
 
 
-  if(stumbleTimer>0)
+  if(
+    stumbleTimer>0
+  ){
+
     stumbleTimer=
       Math.max(
         0,
         stumbleTimer-dt
       );
+  }
 
-  if(shakeTimer>0)
+
+  if(
+    shakeTimer>0
+  ){
+
     shakeTimer=
       Math.max(
         0,
         shakeTimer-dt
       );
+  }
 
 
   document.getElementById(
@@ -2011,10 +2534,12 @@ function update(dt){
   /* power timers */
 
   for(
-    const k in powerups
+    var k in powerups
   ){
 
-    if(powerups[k]>0){
+    if(
+      powerups[k]>0
+    ){
 
       powerups[k]=
         Math.max(
@@ -2032,12 +2557,14 @@ function update(dt){
     ?"block"
     :"none";
 
+
   document.getElementById(
     "pu-shield"
   ).style.display=
     powerups.shield>0
     ?"block"
     :"none";
+
 
   document.getElementById(
     "pu-jump"
@@ -2046,12 +2573,14 @@ function update(dt){
     ?"block"
     :"none";
 
+
   document.getElementById(
     "pu-speed"
   ).style.display=
     powerups.speed>0
     ?"block"
     :"none";
+
 
   document.getElementById(
     "pu-mult"
@@ -2065,20 +2594,31 @@ function update(dt){
 
   spawnTimer-=dt;
 
-  if(spawnTimer<=0){
+
+  if(
+    spawnTimer<=0
+  ){
 
     spawnObstacle();
 
-    if(Math.random()<.8)
+
+    if(
+      Math.random()<.8
+    )
       spawnCoinsRow();
 
-    if(Math.random()<.12)
+
+    if(
+      Math.random()<.12
+    )
       spawnPowerup();
+
 
     spawnTimer=
       Math.max(
         .75,
-        1.6-elapsed*.01
+        1.6-
+        elapsed*.01
       );
   }
 
@@ -2086,12 +2626,15 @@ function update(dt){
   /* scenery */
 
   RCGame.scenery.forEach(
-    o=>{
+    function(o){
 
       o.position.z+=
         speed*dt;
 
-      if(o.position.z>15){
+
+      if(
+        o.position.z>15
+      ){
 
         o.position.z-=180;
       }
@@ -2099,13 +2642,18 @@ function update(dt){
   );
 
 
+  /* stripes */
+
   RCGame.stripes.forEach(
-    s=>{
+    function(s){
 
       s.position.z+=
         speed*dt;
 
-      if(s.position.z>10){
+
+      if(
+        s.position.z>10
+      ){
 
         s.position.z-=192;
       }
@@ -2113,13 +2661,18 @@ function update(dt){
   );
 
 
+  /* dividers */
+
   RCGame.dividers.forEach(
-    s=>{
+    function(s){
 
       s.position.z+=
         speed*dt;
 
-      if(s.position.z>10){
+
+      if(
+        s.position.z>10
+      ){
 
         s.position.z-=200;
       }
@@ -2127,31 +2680,48 @@ function update(dt){
   );
 
 
-  /* obstacles */
+  /* =======================================================
+     OBSTACLES / COLLISION
+
+     FIRST HIT:
+       - Raju stumbles
+       - Teacher gets much closer
+       - Game continues
+
+     SECOND HIT:
+       - Immediate Game Over
+  ======================================================= */
 
   for(
-    let i=obstacles.length-1;
+    var i=
+      obstacles.length-1;
     i>=0;
     i--
   ){
 
-    const o=obstacles[i];
+    var o=
+      obstacles[i];
 
-    const prevZ=
+
+    var prevZ=
       o.mesh.position.z;
+
 
     o.mesh.position.z+=
       speed*dt;
 
-    const laneClose=
+
+    var laneClose=
       Math.abs(
         curX-
         LANES[o.lane]
       )<1.1;
 
-    const crossed=
+
+    var crossed=
       prevZ<.6 &&
       o.mesh.position.z>=-.6;
+
 
     if(
       !o.hit &&
@@ -2164,23 +2734,31 @@ function update(dt){
       )
     ){
 
-      const tall=
+      var tall=
         o.mesh.userData.isBus;
 
-      const clearedByJump=
+
+      var clearedByJump=
         isJumping &&
         player.position.y>1;
 
-      const clearedBySlide=
+
+      var clearedBySlide=
         isSliding &&
         !tall;
 
+
       if(
-        !(clearedByJump ||
-          clearedBySlide)
+        !(
+          clearedByJump ||
+          clearedBySlide
+        )
       ){
 
         o.hit=true;
+
+
+        /* Shield absorbs this hit */
 
         if(
           powerups.shield>0
@@ -2192,22 +2770,67 @@ function update(dt){
 
         }else{
 
-          gap=
-            Math.max(
-              0,
-              gap-2.2
-            );
+          /*
+            REAL COLLISION COUNT
+          */
+
+          collisionCount++;
+
 
           sfx.hit();
+
           sfx.horn();
 
+
           stumbleTimer=.45;
+
           shakeTimer=.35;
+
 
           o.mesh.userData.knock=
             curX<=LANES[o.lane]
             ?-1
             :1;
+
+
+          /* =========================================
+             FIRST COLLISION
+             Teacher moves close
+          ========================================= */
+
+          if(
+            collisionCount===1
+          ){
+
+            /*
+              Original gap was around 5.5m.
+
+              After first hit:
+              teacher gets close to about 1.6m.
+            */
+
+            gap=
+              Math.min(
+                gap,
+                1.6
+              );
+
+          }
+
+
+          /* =========================================
+             SECOND COLLISION
+             GAME OVER
+          ========================================= */
+
+          else if(
+            collisionCount>=2
+          ){
+
+            triggerGameOver();
+
+            return;
+          }
         }
       }
     }
@@ -2236,45 +2859,63 @@ function update(dt){
         o.mesh
       );
 
-      obstacles.splice(i,1);
+      obstacles.splice(
+        i,
+        1
+      );
     }
   }
 
 
-  /* coins */
+  /* =======================================================
+     COINS
+  ======================================================= */
 
   for(
-    let i=coinObjs.length-1;
-    i>=0;
-    i--
+    var ci=
+      coinObjs.length-1;
+    ci>=0;
+    ci--
   ){
 
-    const c=coinObjs[i];
+    var c=
+      coinObjs[ci];
+
 
     c.mesh.position.z+=
       speed*dt;
 
+
     c.mesh.rotation.y+=
       dt*6;
 
-    let lane=c.lane;
 
-    if(powerups.magnet>0){
+    var coinLane=
+      c.lane;
+
+
+    if(
+      powerups.magnet>0
+    ){
 
       c.mesh.position.x+=
         (
           curX-
           c.mesh.position.x
         )*
-        Math.min(1,dt*8);
+        Math.min(
+          1,
+          dt*8
+        );
 
-      lane=laneIdx;
+      coinLane=
+        laneIdx;
     }
 
 
     if(
       !c.taken &&
-      lane===laneIdx &&
+      coinLane===laneIdx &&
       overlapZ(
         c.mesh.position.z,
         .8
@@ -2283,13 +2924,20 @@ function update(dt){
 
       c.taken=true;
 
+
       RCGame.scene.remove(
         c.mesh
       );
 
-      coinObjs.splice(i,1);
+
+      coinObjs.splice(
+        ci,
+        1
+      );
+
 
       coins++;
+
 
       score+=
         10*
@@ -2298,6 +2946,7 @@ function update(dt){
           ?2
           :1
         );
+
 
       sfx.coin();
 
@@ -2313,26 +2962,36 @@ function update(dt){
         c.mesh
       );
 
-      coinObjs.splice(i,1);
+      coinObjs.splice(
+        ci,
+        1
+      );
     }
   }
 
 
-  /* powerups */
+  /* =======================================================
+     POWERUPS
+  ======================================================= */
 
   for(
-    let i=powerObjs.length-1;
-    i>=0;
-    i--
+    var pi=
+      powerObjs.length-1;
+    pi>=0;
+    pi--
   ){
 
-    const p=powerObjs[i];
+    var p=
+      powerObjs[pi];
+
 
     p.mesh.position.z+=
       speed*dt;
 
+
     p.mesh.rotation.y+=
       dt*4;
+
 
     p.mesh.rotation.x+=
       dt*2;
@@ -2349,16 +3008,23 @@ function update(dt){
 
       p.taken=true;
 
+
       RCGame.scene.remove(
         p.mesh
       );
 
-      powerObjs.splice(i,1);
+
+      powerObjs.splice(
+        pi,
+        1
+      );
+
 
       powerups[p.type]=
         p.type==="shield"
         ?1
         :8;
+
 
       sfx.power();
 
@@ -2374,28 +3040,37 @@ function update(dt){
         p.mesh
       );
 
-      powerObjs.splice(i,1);
+      powerObjs.splice(
+        pi,
+        1
+      );
     }
   }
 
 
-  /* camera */
+  /* =======================================================
+     CAMERA
+  ======================================================= */
 
-  const shk=
+  var shk=
     shakeTimer>0
     ?shakeTimer/.35
     :0;
+
 
   RCGame.camera.position.x+=
     (
       curX*.4-
       RCGame.camera.position.x
     )*
-    Math.min(1,dt*4)
-    +
+    Math.min(
+      1,
+      dt*4
+    )+
     (
       Math.random()-.5
     )*.4*shk;
+
 
   RCGame.camera.position.y=
     4.2+
@@ -2403,8 +3078,10 @@ function update(dt){
       Math.random()-.5
     )*.25*shk;
 
+
   RCGame.camera.position.z=
     player.position.z+8.5;
+
 
   RCGame.camera.lookAt(
     curX*.6,
@@ -2413,17 +3090,21 @@ function update(dt){
   );
 
 
-  /* HUD */
+  /* =======================================================
+     HUD
+  ======================================================= */
 
   document.getElementById(
     "scoreVal"
   ).textContent=
     Math.floor(score);
 
+
   document.getElementById(
     "distVal"
   ).textContent=
     Math.floor(distance);
+
 
   document.getElementById(
     "coinVal"
@@ -2438,19 +3119,25 @@ function update(dt){
 
 function showOnly(id){
 
-  [
+  var ids=[
     "menu",
     "howto",
     "settings",
     "pauseMenu",
     "gameOver"
-  ].forEach(
-    x=>
+  ];
+
+
+  ids.forEach(
+    function(x){
+
       document
         .getElementById(x)
         .classList
-        .add("hidden")
+        .add("hidden");
+    }
   );
+
 
   if(id){
 
@@ -2463,7 +3150,9 @@ function showOnly(id){
 
 function startGame(){
 
-  if(!RCGame.engineReady){
+  if(
+    !RCGame.engineReady
+  ){
 
     fatal(
       "Game engine is still loading. Please wait a moment and try again."
@@ -2472,22 +3161,27 @@ function startGame(){
     return;
   }
 
+
   showOnly(null);
+
 
   document
     .getElementById("hud")
     .classList
     .remove("hidden");
 
+
   document
     .getElementById("powerupBar")
     .classList
     .remove("hidden");
 
+
   document
     .getElementById("touchControls")
     .classList
     .remove("hidden");
+
 
   try{
 
@@ -2525,6 +3219,7 @@ function togglePause(on){
 
     stopMusic();
 
+
   }else if(
     state==="paused" &&
     !on
@@ -2543,43 +3238,49 @@ function togglePause(on){
 
 function setupUI(){
 
-  const startBtn=
-    document.getElementById(
-      "startBtn"
-    );
-
-  startBtn.onclick=
+  document.getElementById(
+    "startBtn"
+  ).onclick=
     startGame;
 
 
   document.getElementById(
     "howBtn"
   ).onclick=
-    ()=>showOnly("howto");
+    function(){
+      showOnly("howto");
+    };
 
 
   document.getElementById(
     "backFromHow"
   ).onclick=
-    ()=>showOnly("menu");
+    function(){
+      showOnly("menu");
+    };
 
 
   document.getElementById(
     "settingsBtn"
   ).onclick=
-    ()=>showOnly("settings");
+    function(){
+      showOnly("settings");
+    };
 
 
   document.getElementById(
     "backFromSettings"
   ).onclick=
-    ()=>showOnly("menu");
+    function(){
+      showOnly("menu");
+    };
 
 
-  const soundToggle=
+  var soundToggle=
     document.getElementById(
       "soundToggle"
     );
+
 
   soundToggle.textContent=
     soundOn
@@ -2592,56 +3293,62 @@ function setupUI(){
 
       soundOn=!soundOn;
 
+
       this.textContent=
         soundOn
         ?"ON"
         :"OFF";
 
-      try{
 
-        localStorage.setItem(
-          "rc_sound",
-          soundOn
-          ?"on"
-          :"off"
-        );
-
-      }catch(e){}
+      setStore(
+        "rc_sound",
+        soundOn
+        ?"on"
+        :"off"
+      );
 
 
-      if(!soundOn)
+      if(!soundOn){
+
         stopMusic();
 
-      else if(state==="playing")
+      }else if(
+        state==="playing"
+      ){
+
         startMusic();
+      }
     };
 
 
-  const gfxSelect=
+  var gfxSelect=
     document.getElementById(
       "gfxSelect"
     );
 
-  let savedGfx="medium";
 
-  try{
+  var savedGfx=
+    getStore(
+      "rc_gfx",
+      "medium"
+    );
 
-    savedGfx=
-      localStorage.getItem(
-        "rc_gfx"
-      )||"medium";
-
-  }catch(e){}
 
   if(
-    !["low","medium","high"]
-    .includes(savedGfx)
+    ![
+      "low",
+      "medium",
+      "high"
+    ].includes(savedGfx)
   ){
+
     savedGfx="medium";
   }
 
+
   RCGame.gfx=
     savedGfx;
+
 
   gfxSelect.value=
     savedGfx;
@@ -2653,46 +3360,56 @@ function setupUI(){
       RCGame.gfx=
         this.value;
 
-      try{
 
-        localStorage.setItem(
-          "rc_gfx",
-          RCGame.gfx
+      setStore(
+        "rc_gfx",
+        RCGame.gfx
+      );
+
+
+      var pixelRatio=
+        RCGame.gfx==="high"
+
+        ?Math.min(
+          window.devicePixelRatio||1,
+          2
+        )
+
+        :RCGame.gfx==="low"
+
+        ?1
+
+        :Math.min(
+          window.devicePixelRatio||1,
+          1.5
         );
 
-      }catch(e){}
 
+      if(
+        RCGame.renderer
+      ){
 
-      const pixelRatio=
-        RCGame.gfx==="high"
-        ?Math.min(
-            window.devicePixelRatio||1,
-            2
-          )
-        :RCGame.gfx==="low"
-        ?1
-        :Math.min(
-            window.devicePixelRatio||1,
-            1.5
-          );
-
-      RCGame.renderer
-        .setPixelRatio(
+        RCGame.renderer.setPixelRatio(
           pixelRatio
         );
+      }
     };
 
 
   document.getElementById(
     "pauseBtn"
   ).onclick=
-    ()=>togglePause(true);
+    function(){
+      togglePause(true);
+    };
 
 
   document.getElementById(
     "resumeBtn"
   ).onclick=
-    ()=>togglePause(false);
+    function(){
+      togglePause(false);
+    };
 
 
   document.getElementById(
@@ -2719,20 +3436,24 @@ function setupUI(){
 
       stopMusic();
 
+
       document
         .getElementById("hud")
         .classList
         .add("hidden");
+
 
       document
         .getElementById("powerupBar")
         .classList
         .add("hidden");
 
+
       document
         .getElementById("touchControls")
         .classList
         .add("hidden");
+
 
       showOnly("menu");
     };
@@ -2745,20 +3466,24 @@ function setupUI(){
 
       showOnly(null);
 
+
       document
         .getElementById("hud")
         .classList
         .remove("hidden");
+
 
       document
         .getElementById("powerupBar")
         .classList
         .remove("hidden");
 
+
       document
         .getElementById("touchControls")
         .classList
         .remove("hidden");
+
 
       resetGame();
 
@@ -2777,20 +3502,24 @@ function setupUI(){
 
       stopMusic();
 
+
       document
         .getElementById("hud")
         .classList
         .add("hidden");
+
 
       document
         .getElementById("powerupBar")
         .classList
         .add("hidden");
 
+
       document
         .getElementById("touchControls")
         .classList
         .add("hidden");
+
 
       showOnly("menu");
     };
@@ -2808,13 +3537,17 @@ window.addEventListener(
     if(
       !RCGame.camera ||
       !RCGame.renderer
-    ) return;
+    )
+      return;
+
 
     RCGame.camera.aspect=
       window.innerWidth/
       window.innerHeight;
 
+
     RCGame.camera.updateProjectionMatrix();
+
 
     RCGame.renderer.setSize(
       window.innerWidth,
@@ -2829,7 +3562,7 @@ window.addEventListener(
    MAIN LOOP
 ========================================================= */
 
-let lastT=
+var lastT=
   performance.now();
 
 function animate(now){
@@ -2838,13 +3571,16 @@ function animate(now){
     animate
   );
 
-  const dt=
+
+  var dt=
     Math.min(
       (now-lastT)/1000,
       .05
     );
 
+
   lastT=now;
+
 
   if(
     RCGame.engineReady &&
@@ -2853,6 +3589,7 @@ function animate(now){
 
     update(dt);
   }
+
 
   if(
     RCGame.engineReady &&
@@ -2873,7 +3610,9 @@ function animate(now){
    START ENGINE
 ========================================================= */
 
-if(initEngine()){
+if(
+  initEngine()
+){
 
   resetGame();
 
@@ -2892,4 +3631,3 @@ if(initEngine()){
 
 </body>
 </html>
-```
